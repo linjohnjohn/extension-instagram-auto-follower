@@ -1,25 +1,25 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
-  "icons": [
+  "name": "Instagram Auto Follower",
+  "version": "1.0",
+  "description": "Automate your instagram Follow for Follow strategy!",
+  "permissions": ["https://www.instagram.com/*", "storage", "tabs"],
+  "manifest_version": 2,
+  "icons": {
+    "16": "instagram-auto-follower-icon16.png",
+    "32": "instagram-auto-follower-icon32.png",
+    "48": "instagram-auto-follower-icon48.png",
+    "128": "instagram-auto-follower-icon128.png"
+  },
+  "browser_action": {},
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "matches": ["https://www.instagram.com/*"],
+      "css": ["/static/css/2.chunk.css", "/static/css/content.css"],
+      "js": ["/static/js/2.chunk.js", "/static/js/content.js"]
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "content_security_policy": "script-src 'self' 'sha256-FRoFlGx2+Fhv0tPS9pYdsPweLbLLjRfa4Ap2BYiXk2E='; object-src 'self'"
 }
