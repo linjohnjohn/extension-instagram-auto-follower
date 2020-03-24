@@ -139,7 +139,8 @@ module.exports = function(webpackEnv) {
     // This means they will be the "root" imports that are included in JS bundle.
     entry: {
       content: "./src/content/content.js",
-      autoFollow: "./src/action_scripts/autoFollow.js"
+      autoFollow: "./src/action_scripts/autoFollow.js",
+      background: "./src/background/background.js"
     },
     output: {
       // The build folder.
