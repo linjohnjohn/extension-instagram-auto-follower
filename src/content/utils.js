@@ -1,39 +1,73 @@
-/* global chrome */
-
-
-const likePosts = async () => {
-    try {
-        await waitThenDo(() => {
-            document.querySelector('.eLAPa').click()
-        }, 3000);
-        
-        for (let i = 0; i < 5; i ++) {
-            await waitThenDo(() => {
-                const likeButton = document.querySelector('span.fr66n .wpO6b');
-                likeButton.click();
-            }, 1000)
-            
-            await waitThenDo(() => {
-                const nextButton = document.querySelector('a._65Bje.coreSpriteRightPaginationArrow');
-                nextButton.click();
-            }, 2000)
-        }
-        chrome.runtime.sendMessage({ type: 'close' })
-    } catch (err) {
-        chrome.runtime.sendMessage({ type: 'close' })
-    }
-}
-
-const waitThenDo = (fn, delay) => {
+export const waitThenDo = (fn, delay) => {
     return new Promise((resolve) => {
         setTimeout(() => {
             try {
                 resolve(fn())
             } catch (err) {
-                chrome.runtime.sendMessage({ type: 'close' })
+                console.log(err)
             }
         }, delay)
     })
 }
 
-likePosts();
+/**
+ * executes a function and then waits a delay amount of time before
+ * resolving that return of that execution in a Promise;
+ * 
+ * @param {*} fn 
+ * @param {*} delay 
+ */
+export const doThenWait = (fn = () => {}, delay) => {
+    return new Promise(async (resolve) => {
+        let ret;
+        try {
+            ret = await fn();
+        } catch (err) {
+            console.log(err)
+        }
+        setTimeout(() => {
+            resolve(ret)
+        }, delay)
+    })
+}
+
+export const repeatIfError = (fn, repeatTimeout = 1000) => {
+    return new Promise(async (resolve) => {
+        try {
+            const ret = await fn();
+            resolve(ret)
+        } catch (err) {
+            console.log(err)
+            setTimeout(() => {
+                resolve(repeatIfError(fn))
+            }, repeatTimeout)
+        }
+    });
+}
+
+/**
+ * executes a function fn and resolves the return value of that execution in a
+ * Promise; if the execution fails then function execution is repeated for up to
+ * limit times with a timeout in between each execution; if it still fails after
+ * the limit then it will resolve the promise with null;
+ *
+ * @param {*} fn 
+ * @param {*} limit 
+ * @param {*} repeatTimeout milliseconds
+ * @return a promise that resolves with the return value of the function execution 
+ */
+export const repeatIfErrorLimited = (fn, limit = 10, repeatTimeout = 1000) => {
+    return new Promise(async (resolve) => {
+        for (let i = 0; i < limit; i++) {
+            try {
+                const ret = await fn();
+                resolve(ret);
+                return;
+            } catch (err) {
+                console.log(err);
+                await doThenWait(undefined, repeatTimeout)
+            }
+        }
+        resolve(null);
+    });
+}

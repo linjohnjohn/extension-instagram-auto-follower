@@ -1,8 +1,12 @@
+/* eslint-disable no-loop-func */
 /* global chrome */
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './content.css';
+import { repeatIfError, doThenWait } from './utils';
+import * as selectors from './selectors';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // const silenceURL = chrome.runtime.getURL('/silent.mp3');
@@ -34,30 +38,37 @@ class App extends React.Component {
 
     followLoop = (delay) => {
         let oldDate = 0;
-        const doFollow = () => {
+        const doFollow = async () => {
             let buttons = null;
+            const batch = 5
+            while (true) {
+                await doThenWait(async () => {
+                    for (let i = 0; i < batch; i) {
+                        buttons = Array.from(document.querySelectorAll('.sqdOP.L3NKy.y3zKF:not(._8A5w5)'));
+                        if (buttons.length !== 0) {
+                            await doThenWait(() => {
+                                const newDate = Date.now()
+                                console.log(newDate - oldDate, this.state.activityCount + 1);
+                                const targetButton = buttons[0];
+                                targetButton.scrollIntoView();
+                                targetButton.click();
+                                this.incrementActivityCount();
+                                oldDate = newDate
 
-            buttons = Array.from(document.querySelectorAll('.sqdOP.L3NKy.y3zKF:not(._8A5w5)'));
-            if (buttons.length !== 0) {
-                const newDate = Date.now()
-                console.log(newDate - oldDate, this.state.activityCount + 1);
-                const targetButton = buttons[0];
-                targetButton.scrollIntoView();
-                targetButton.click();
-                this.incrementActivityCount();
-                oldDate = newDate
-
-                const username = targetButton.parentElement.parentElement.querySelector('._7UhW9 a').textContent
-                chrome.runtime.sendMessage({ type: 'likeUserPosts', username: username });
-                setTimeout(doFollow, delay);
-            } else {
-                const whiteButtons = Array.from(document.querySelectorAll('.sqdOP.L3NKy._8A5w5'));
-
-                if (whiteButtons.length !== 0) {
-                    whiteButtons[whiteButtons.length - 1].scrollIntoView();
-                    // timeout of 1000 since we did not actually click follow here
-                    setTimeout(doFollow, 1000);
-                }
+                                const username = targetButton.parentElement.parentElement.querySelector('._7UhW9 a').textContent
+                                chrome.runtime.sendMessage({ type: 'likeUserPosts', username: username });
+                            }, 5000);
+                            i++;
+                        } else {
+                            await doThenWait(() => {
+                                const whiteButtons = Array.from(document.querySelectorAll('.sqdOP.L3NKy._8A5w5'));
+                                if (whiteButtons.length !== 0) {
+                                    whiteButtons[whiteButtons.length - 1].scrollIntoView();
+                                }
+                            }, 1000);
+                        }
+                    }
+                }, delay * batch);
             }
         }
 
@@ -65,43 +76,37 @@ class App extends React.Component {
     };
 
     unFollowLoop = (delay) => {
-        const unfollow = () => {
+        const unfollow = async () => {
             let buttons = null;
+            const batch = 5
 
-            buttons = Array.from(document.querySelectorAll('.sqdOP.L3NKy._8A5w5:not(._4pI4F)'));
-            if (buttons.length !== 0) {
-                const targetButton = buttons[0];
-                if (targetButton.textContent !== 'Following') {
-                    setTimeout(unfollow, delay);
-                    return;
-                }
+            while (true) {
+                await doThenWait(async () => {
+                    for (let i = 0; i < batch; i) {
+                        buttons = Array.from(document.querySelectorAll('.sqdOP.L3NKy._8A5w5:not(._4pI4F)'));
+                        if (buttons.length !== 0) {
+                            const targetButton = buttons[0];
 
-                targetButton.scrollIntoView();
-                targetButton.click();
-                // console.log('click unfollow', targetButton.textContent);
-                setTimeout(() => {
-                    const confirmButton = document.querySelector('.aOOlW.-Cab_');
-                    if (confirmButton) {
-                        confirmButton.click();
-                        this.incrementActivityCount();
-                        // console.log('confirm unfollow');
-                        setTimeout(unfollow, delay);
-                    } else {
-                        // console.log('refresh');
-                        setTimeout(unfollow, 1000);
+                            await doThenWait(() => {
+                                targetButton.scrollIntoView();
+                                targetButton.click();
+                            }, 0);
+
+                            await doThenWait(async () => {
+                                await repeatIfError(() => {
+                                    const confirmButton = document.querySelector('.aOOlW.-Cab_');
+                                    confirmButton.click();
+                                    this.incrementActivityCount();
+                                })
+                            }, 5000);
+                            i++;
+                        }
                     }
-                }, 1000);
+                }, delay * batch);
             }
         }
         unfollow();
     }
-
-    // componentDidMount() {
-    //     this.silentAudio.onended = () => {
-    //         this.silentAudio.currentTime = 0;
-    //         this.silentAudio.play();
-    //     };
-    // }
 
     handleFollow = () => {
         if (this.state.activityType !== ACTIVITY_TYPE.NONE) {
@@ -121,6 +126,14 @@ class App extends React.Component {
             this.unFollowLoop(this.state.delay * 1000);
             this.setState({ activityType: ACTIVITY_TYPE.UNFOLLOW });
         }
+    }
+
+    openUnfollowMenu = async () => {
+        await doThenWait(() => {
+            selectors.selectFollowingOpener().click();
+        }, 5000);
+        
+        selectors.selectProfileIcon().click();
     }
 
     handleStop = () => {
@@ -150,10 +163,11 @@ class App extends React.Component {
                         <label>You have {ACTION_VERBS[activityType]} <label id="extension-count">{activityCount}</label> people in this session.</label>
                     </React.Fragment>
                 }
+                <button className="btn btn-success mb-3" onClick={this.openUnfollowMenu}>Test Functionality</button>
                 <p>
-                    <a 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                    <a
+                        target="_blank"
+                        rel="noopener noreferrer"
                         href={chrome.runtime.getURL('/help/help.html')}
                     >
                         Need help? Here are instructions
