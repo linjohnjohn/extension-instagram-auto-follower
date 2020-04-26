@@ -128,12 +128,25 @@ class App extends React.Component {
         }
     }
 
-    openUnfollowMenu = async () => {
+    attemptLogin = async () => {
         await doThenWait(() => {
-            selectors.selectFollowingOpener().click();
-        }, 5000);
-        
-        selectors.selectProfileIcon().click();
+            const switchAccountButton = selectors.selectSwitchAccountButton();
+            if (switchAccountButton) {
+                switchAccountButton.click();
+            }
+        }, 2000);
+
+        await doThenWait(() => {
+            selectors.selectUsernameInput().focus();
+            chrome.runtime.sendMessage({ type: "typeString", string: "pupreciation" });
+        }, 2000);
+
+        await doThenWait(() => {
+            selectors.selectPasswordInput().focus();
+            chrome.runtime.sendMessage({ type: "typeString", string: "nightpuppy2" });
+        }, 2000);
+
+        selectors.selectLoginButton().click();
     }
 
     handleStop = () => {
@@ -163,7 +176,7 @@ class App extends React.Component {
                         <label>You have {ACTION_VERBS[activityType]} <label id="extension-count">{activityCount}</label> people in this session.</label>
                     </React.Fragment>
                 }
-                <button className="btn btn-success mb-3" onClick={this.openUnfollowMenu}>Test Functionality</button>
+                <button className="btn btn-success mb-3" onClick={this.attemptLogin}>Test Functionality</button>
                 <p>
                     <a
                         target="_blank"
@@ -187,6 +200,7 @@ app.style.display = "none";
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
         if (request.message === "clicked_browser_action") {
+            console.log('ba')
             toggle();
         }
     }

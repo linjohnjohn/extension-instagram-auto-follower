@@ -1,3 +1,9 @@
+export const fuzzNumber = (baseNumber, percentage) => {
+    const delta = Math.floor(baseNumber * (percentage / 100));
+    const lowerBound = baseNumber - delta;
+    return lowerBound + Math.floor(Math.random() * (2 * delta + 1));
+}
+
 export const waitThenDo = (fn, delay) => {
     return new Promise((resolve) => {
         setTimeout(() => {
