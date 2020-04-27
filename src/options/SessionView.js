@@ -23,7 +23,6 @@ export default class extends React.Component {
             const newTask = await session.createTask(newTaskType);
             session.tasks.push(newTask);
             this.setState({ session: { ...session } });
-
         }
     }
 
@@ -36,19 +35,13 @@ export default class extends React.Component {
 
     render() {
         const { session, newTaskType } = this.state;
-        const { tasks = [], username, password } = session;
+        const { tasks = [] } = session;
         const taskTypes = Object.values(K.taskType);
 
         return <div className="container">
             <div class='row justify-content-center'>
                 <div class='col-6'>
                     <h1>{session.uid}</h1>
-                    <div class="row">
-                        <label class="col-sm-4"><b>Username:</b></label>
-                        <label class="col-sm-8">{username}</label>
-                        <label class="col-sm-4"><b>Password:</b></label>
-                        <label class="col-sm-8">{password}</label>
-                    </div>
 
                     <h1>Tasks</h1>
 

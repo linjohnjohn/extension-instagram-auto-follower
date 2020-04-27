@@ -8,6 +8,7 @@ import { repeatIfError, doThenWait } from './utils';
 import * as selectors from './selectors';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Task } from '../models/tasks/Task';
 
 // const silenceURL = chrome.runtime.getURL('/silent.mp3');
 // const sirenURL = chrome.runtime.getURL('/siren.mp3');
@@ -30,7 +31,13 @@ class App extends React.Component {
         delay: 180,
     }
 
-    // silentAudio = new Audio(sirenURL);
+    componentDidMount() {
+        chrome.runtime.onMessage.addListener((msg, sender) => {
+            if (msg.type === 'doTask') {
+                Task.fromObject(msg.task).run();                
+            }
+        });
+    }
 
     incrementActivityCount(val = 1) {
         this.setState({ activityCount: this.state.activityCount + val })

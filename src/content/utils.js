@@ -1,4 +1,4 @@
-export const fuzzNumber = (baseNumber, percentage) => {
+export const fuzzNumber = (baseNumber, percentage = 20) => {
     const delta = Math.floor(baseNumber * (percentage / 100));
     const lowerBound = baseNumber - delta;
     return lowerBound + Math.floor(Math.random() * (2 * delta + 1));

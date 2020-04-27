@@ -39,6 +39,7 @@ export class Task {
     }
 
     done() {
+        console.log('finishedTask')
         chrome.runtime.sendMessage({ type: 'finishedTasked' });
     }
 }
@@ -48,6 +49,7 @@ export class FollowLoop extends Task {
         super(uid, type);
         this.averageDelay = averageDelay;
         this.limit = limit;
+        this.sources = [];
     }
 
     setup = async () => {
@@ -55,6 +57,11 @@ export class FollowLoop extends Task {
     }
 
     run = async () => {
+        //@todo
+        await doThenWait(() => {
+            selectors.selectLikersOpener().click();
+        }, 5000);
+
         const { averageDelay: delay, limit } = this;
         let oldDate = 0;
         let buttons = null;
@@ -103,18 +110,15 @@ export class UnfollowLoop extends Task {
         this.limit = limit;
     }
 
-    setup = async () => {
+    run = async () => {
         await doThenWait(() => {
             selectors.selectProfileIcon().click();
         }, 5000);
 
         await doThenWait(() => {
-            selectors.selectProfileIcon().click();
+            selectors.selectFollowingOpener().click();
         }, 5000);
-    }
 
-
-    unFollowLoop = async () => {
         const { averageDelay: delay, limit } = this;
         let buttons = null;
         for (let h = 0; h < limit; h) {
@@ -134,13 +138,13 @@ export class UnfollowLoop extends Task {
                             await repeatIfErrorLimited(() => {
                                 const confirmButton = document.querySelector('.aOOlW.-Cab_');
                                 confirmButton.click();
-                                this.incrementActivityCount();
                             });
                         }, 5000);
                         i++;
+                        console.log(i, batch, delay)
                     }
                 }
-            }, fuzzNumber(delay * batch));
+            }, fuzzNumber(delay * batch, 20));
             h += batch
         }
 
@@ -149,6 +153,12 @@ export class UnfollowLoop extends Task {
 }
 
 export class Login extends Task {
+    constructor(uid, type, username = '', password = '') {
+        super(uid, type);
+        this.username = username;
+        this.password = password;
+    }
+
     run = async () => {
         await doThenWait(() => {
             const switchAccountButton = selectors.selectSwitchAccountButton();
@@ -159,17 +169,17 @@ export class Login extends Task {
 
         await doThenWait(() => {
             selectors.selectUsernameInput().focus();
-            chrome.runtime.sendMessage({ type: "typeString", string: "pupreciation" });
+            chrome.runtime.sendMessage({ type: "typeString", string: this.username });
         }, 2000);
 
         await doThenWait(() => {
             selectors.selectPasswordInput().focus();
-            chrome.runtime.sendMessage({ type: "typeString", string: "nightpuppy2" });
+            chrome.runtime.sendMessage({ type: "typeString", string: this.password });
         }, 2000);
 
         selectors.selectLoginButton().click();
-
         this.done();
+
     }
 }
 
@@ -185,9 +195,8 @@ export class Logout extends Task {
 
         await doThenWait(() => {
             selectors.selectLogoutButton().click();
+            this.done();
         }, 2000);
-
-        this.done();
     }
 }
 

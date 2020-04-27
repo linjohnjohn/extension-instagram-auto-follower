@@ -3,14 +3,23 @@ import K from '../constants';
 import { Task, FollowLoop, UnfollowLoop, Login, Logout, LikeUserPosts } from './tasks/Task';
 
 export default class Session {
-    static async createSession (username, password) {
+    static async createSession() {
         const result = await chromeStorage.get('sessions');
         const sessions = result.sessions || [];
         
-        const newSession = new Session(chromeStorage.uuidv4(), username, password);
+        const newSession = new Session(chromeStorage.uuidv4());
         sessions.push(newSession);
         await chromeStorage.set({ sessions });
         return newSession;
+    }
+
+    static async deleteSession(sessionId) {
+        const result = await chromeStorage.get('sessions');
+        const sessions = result.sessions || [];
+        const sessionIndex = sessions.findIndex(s => s.uid === sessionId);
+        sessions.splice(sessionIndex, 1);
+        await chromeStorage.set({ sessions });
+        return sessions;
     }
 
     static async getAllSessions() {
@@ -46,11 +55,9 @@ export default class Session {
 
         const taskIndex = session.tasks.findIndex(t => {
             return t.uid === taskId
-        })[0];
+        });
 
         session.tasks[taskIndex] = newTask;
-
-        console.log(sessions)
 
         await chromeStorage.set({ sessions });
         return newTask;
@@ -62,10 +69,8 @@ export default class Session {
         return newS;
     }
 
-    constructor(uid, username = '', password = '') {
+    constructor(uid) {
         this.uid = uid;
-        this.username = username;
-        this.password = password;
         this.tasks = [];
     }
 
