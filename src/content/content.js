@@ -8,7 +8,7 @@ import { repeatIfError, doThenWait } from './utils';
 import * as selectors from './selectors';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Task } from '../models/tasks/Task';
+import TaskAPI from '../models/TaskAPI';
 
 // const silenceURL = chrome.runtime.getURL('/silent.mp3');
 // const sirenURL = chrome.runtime.getURL('/siren.mp3');
@@ -34,7 +34,7 @@ class App extends React.Component {
     componentDidMount() {
         chrome.runtime.onMessage.addListener((msg, sender) => {
             if (msg.type === 'doTask') {
-                Task.fromObject(msg.task).run();                
+                TaskAPI.fromObject(msg.task).run();                
             }
         });
     }

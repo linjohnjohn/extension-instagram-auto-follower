@@ -1,5 +1,6 @@
-import Session from "../models/Session";
 import { doThenWait } from "../content/utils";
+import SessionAPI from "../models/SessionAPI";
+import K from "../constants";
 
 /* global chrome */
 
@@ -74,12 +75,18 @@ class SessionManager {
                 this.activeTabs = this.activeTabs.filter(id => id !== sender.tab.id);
                 this.performNextTask();
             });
+        } else if (msg.type === 'replaceWithAnotherTask') {
+            console.log('replaceWithAnotherTask', msg.task);
+            chrome.tabs.remove(sender.tab.id, () => {
+                this.activeTabs = this.activeTabs.filter(id => id !== sender.tab.id);
+                this.startTask(msg.task)
+            });
         }
     }
 
     performNextTask() {
         const { sessions, sessionIndex, taskIndex } = this;
-        console.log('perf', sessions)
+        console.log('performNextTask > sessions', sessions)
         let tasks = sessions[sessionIndex].tasks;
         let nextSessionIndex = sessionIndex;
         let nextTaskIndex = taskIndex + 1;
@@ -99,12 +106,23 @@ class SessionManager {
         this.taskIndex = nextTaskIndex;
 
         const nextTask = sessions[nextSessionIndex].tasks[nextTaskIndex];
-        chrome.windows.create({ url: 'https://instagram.com', focused: false }, window => {
+        this.startTask(nextTask);
+    }
+
+    startTask(task) {
+        let url = 'https://instagram.com';
+        if (task.type === K.taskType.FOLLOW_LOOP) {
+            const { sources } = task;
+            url = sources[Math.floor(Math.random() * sources.length)];
+            // @todo error handling
+            console.log('startTask >', sources, url)
+        }
+        chrome.windows.create({ url: url, focused: false }, window => {
             const newTabId = window.tabs[0].id;
             this.activeTabs.push(newTabId);
             setTimeout(() => {
                 //@todo fix later
-                chrome.tabs.sendMessage(newTabId, { type: 'doTask', task: nextTask });
+                chrome.tabs.sendMessage(newTabId, { type: 'doTask', task: task });
             }, 5000);
         });
     }
@@ -113,9 +131,8 @@ class SessionManager {
         chrome.runtime.onMessage.addListener(messageHandler);
         chrome.runtime.onMessage.addListener(this.specificMessageHandler);
         
-        const sessions = await Session.getAllSessions();
+        const sessions = await SessionAPI.getAllSessions(true);
         this.sessions = sessions
-        console.log('setup', sessions)
 
         if (sessions.length > 0){
             this.sessionIndex = 0;

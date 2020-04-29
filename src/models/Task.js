@@ -1,35 +1,14 @@
 /* eslint-disable no-loop-func */
 /* global chrome */
-import { doThenWait, fuzzNumber, repeatIfErrorLimited } from '../../content/utils';
-import * as selectors from '../../content/selectors';
-import K from '../../constants';
+import * as chromeStorage from './chromeStorage';
+import { doThenWait, fuzzNumber, repeatIfErrorLimited } from '../content/utils';
+import * as selectors from '../content/selectors';
+import K from '../constants';
+import TaskAPI from './TaskAPI';
 
 export class Task {
-    static fromObject(obj) {
-        let task;
-        switch (obj.type) {
-            case K.taskType.FOLLOW_LOOP: 
-                task = new FollowLoop();
-                return Object.assign(task, obj);;
-            case K.taskType.UNFOLLOW_LOOP:
-                task = new UnfollowLoop();
-                return Object.assign(task, obj);;
-            case K.taskType.LIKE_USER_POSTS:
-                task = new LikeUserPosts();
-                return Object.assign(task, obj);;
-            case K.taskType.LOGIN:
-                task = new Login();
-                return Object.assign(task, obj);;
-            case K.taskType.LOGOUT:
-                task = new Logout();
-                return Object.assign(task, obj);;
-            default:
-                throw new Error(`${obj.type} is not a defined Task`)
-        }
-    }
-
-    constructor(uid, type) {
-        this.uid = uid;
+    constructor(type) {
+        this.uid = chromeStorage.uuidv4() ;
         this.type = type;
     }
 
@@ -45,8 +24,8 @@ export class Task {
 }
 
 export class FollowLoop extends Task {
-    constructor(uid, type, averageDelay = 180000, limit = 100) {
-        super(uid, type);
+    constructor(averageDelay = 180000, limit = 100) {
+        super(K.taskType.FOLLOW_LOOP);
         this.averageDelay = averageDelay;
         this.limit = limit;
         this.sources = [];
@@ -65,7 +44,7 @@ export class FollowLoop extends Task {
         const { averageDelay: delay, limit } = this;
         let oldDate = 0;
         let buttons = null;
-        for (let h = 0; h < limit; h) {
+        for (let h = 0; h < fuzzNumber(limit, 20); h) {
             let batch = fuzzNumber(5, 40);
             await doThenWait(async () => {
                 for (let i = 0; i < batch; i++) {
@@ -76,9 +55,8 @@ export class FollowLoop extends Task {
                             const targetButton = buttons[0];
                             targetButton.scrollIntoView();
                             targetButton.click();
-                            this.incrementActivityCount();
                             oldDate = newDate;
-
+                            console.log('batch', h, 'inner', i)
                             const username = targetButton.parentElement.parentElement.querySelector('._7UhW9 a').textContent
                             chrome.runtime.sendMessage({ type: 'likeUserPosts', username: username });
                         }, 5000);
@@ -104,8 +82,8 @@ export class FollowLoop extends Task {
 }
 
 export class UnfollowLoop extends Task {
-    constructor(uid, type, averageDelay = 180000, limit = 100) {
-        super(uid, type);
+    constructor(averageDelay = 180000, limit = 100) {
+        super(K.taskType.UNFOLLOW_LOOP);
         this.averageDelay = averageDelay;
         this.limit = limit;
     }
@@ -152,9 +130,48 @@ export class UnfollowLoop extends Task {
     }
 }
 
+export class FollowUnfollowAlternator extends Task {
+    constructor(averageDelay = 180000, limit = 200, lowerSwitch = 500, upperSwitch = 4500) {
+        super(K.taskType.FOLLOW_UNFOLLOW_ALTERNATOR);
+        this.averageDelay = averageDelay;
+        this.limit = limit;
+        this.sources = [];
+        this.lowerSwitch = lowerSwitch;
+        this.upperSwitch = upperSwitch;
+        this.mode = K.taskType.FOLLOW_LOOP;
+    }
+
+    run = async () => {
+        await doThenWait(() => {
+            selectors.selectProfileIcon().click();
+        }, 5000);
+
+        const followingCount = await doThenWait(() => {
+            return parseInt(selectors.selectFollowingCount().textContent, 10);
+        }, 1000);
+
+        if (this.mode === K.taskType.FOLLOW_LOOP && followingCount >= this.upperSwitch) {
+            this.mode = K.taskType.UNFOLLOW_LOOP;
+            await TaskAPI.updateTask(this.uid, this);
+        } else if (this.mode === K.taskType.UNFOLLOW_LOOP && followingCount <= this.lowerSwitch) {
+            this.mode = K.taskType.FOLLOW_LOOP;
+            await TaskAPI.updateTask(this.uid, this);
+        }
+
+        let task = {
+            type: this.mode,
+            averageDelay: this.averageDelay,
+            limit: this.limit,
+            sources: this.sources
+        };
+
+        chrome.runtime.sendMessage({ type: 'replaceWithAnotherTask', task });
+    }
+}
+
 export class Login extends Task {
-    constructor(uid, type, username = '', password = '') {
-        super(uid, type);
+    constructor(username = '', password = '') {
+        super(K.taskType.LOGIN);
         this.username = username;
         this.password = password;
     }
@@ -184,6 +201,10 @@ export class Login extends Task {
 }
 
 export class Logout extends Task {
+    constructor() {
+        super(K.taskType.LOGOUT);
+    }
+
     run = async () => {
         await doThenWait(() => {
             selectors.selectProfileIcon().click();
@@ -201,11 +222,8 @@ export class Logout extends Task {
 }
 
 export class LikeUserPosts extends Task {
-    constructor(uid, type, likeCount = 5) {
-        if (type !== K.taskType.LIKE_USER_POSTS) {
-            throw Error('Wrong Task Type');
-        }
-        super(uid, type);
+    constructor(likeCount = 5) {
+        super(K.taskType.LIKE_USER_POSTS);
         this.likeCount = likeCount;
     }
  

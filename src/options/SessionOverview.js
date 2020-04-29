@@ -2,8 +2,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import Session from '../models/Session';
 import K from '../constants';
+import SessionAPI from '../models/SessionAPI';
 
 export default class extends React.Component {
     state = {
@@ -12,7 +12,7 @@ export default class extends React.Component {
     }
 
     componentDidMount = async () => {
-        const sessions = await Session.getAllSessions();
+        const sessions = await SessionAPI.getAllSessions();
         console.log(sessions);
         this.setState({ sessions });
 
@@ -35,12 +35,12 @@ export default class extends React.Component {
 
     handleAddSession = async () => {
         const { sessions } = this.state;
-        const newSession = await Session.createSession()
+        const newSession = await SessionAPI.createSession()
         this.setState({ sessions: [...sessions, newSession] });
     }
 
     handleDeleteSession = async (sessionId) => {
-        const newSessions = await Session.deleteSession(sessionId);
+        const newSessions = await SessionAPI.deleteSession(sessionId);
         this.setState({ sessions: newSessions });
     }
 

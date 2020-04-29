@@ -2,6 +2,10 @@ export const selectFollowingOpener = () => {
     return document.querySelectorAll('.-nal3')[2];
 }
 
+export const selectFollowingCount = () => {
+    return document.querySelectorAll('.-nal3 .g47SY')[2];
+}
+
 /**
  * This is the button/link you press to open the panel of people who have liked a post
  */
@@ -12,7 +16,9 @@ export const selectLikersOpener = () => {
 export const selectProfileIcon = () => {
     return document.querySelector('div.Fifk5 a._2dbep.qNELH.kIKUG');
 }
-
+export const selectHomeIcon = () => {
+    return document.querySelectorAll('div.Fifk5 a')[0];
+}
 export const selectAllCommentLikeIcons = () => {
     return Array.from(document.querySelectorAll('button.wpO6b.ZQScA svg[aria-label="Like"]'));
 }

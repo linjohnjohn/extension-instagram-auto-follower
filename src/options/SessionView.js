@@ -1,7 +1,8 @@
 import React from 'react';
-import Session from '../models/Session';
+
 import K from '../constants';
 import { Link } from 'react-router-dom';
+import SessionAPI from '../models/SessionAPI';
 
 export default class extends React.Component {
     state = {
@@ -12,7 +13,7 @@ export default class extends React.Component {
     componentDidMount = async () => {
         const { sessionId } = this.props.match.params;
         // @todo error checking
-        const session = await Session.getSession(sessionId);
+        const session = await SessionAPI.getSession(sessionId, true);
         console.log(session);
         this.setState({ session });
     }
@@ -20,7 +21,7 @@ export default class extends React.Component {
     handleAddTask = async () => {
         const { session, newTaskType } = this.state;
         if (session && newTaskType !== 'none') {
-            const newTask = await session.createTask(newTaskType);
+            const newTask = await SessionAPI.addTask(session.uid, newTaskType);
             session.tasks.push(newTask);
             this.setState({ session: { ...session } });
         }
@@ -28,7 +29,8 @@ export default class extends React.Component {
 
     handleDeleteTask = async (taskIndex) => {
         const { session } = this.state;
-        await this.state.session.deleteTask(taskIndex);
+        const taskId = session.tasks[taskIndex].uid;
+        await SessionAPI.deleteTask(session.uid, taskId);
         session.tasks.splice(taskIndex, 1);
         this.setState({ session: { ...session } });
     }

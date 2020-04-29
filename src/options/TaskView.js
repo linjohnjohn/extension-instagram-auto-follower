@@ -1,6 +1,6 @@
 import React from 'react';
 import K from '../constants';
-import Session from '../models/Session';
+import TaskAPI from '../models/TaskAPI';
 
 export default class extends React.Component {
     state = {
@@ -8,16 +8,16 @@ export default class extends React.Component {
     }
 
     componentDidMount = async () => {
-        const { sessionId, taskId } = this.props.match.params;
-        const task = await Session.getTask(sessionId, taskId);
+        const { taskId } = this.props.match.params;
+        const task = await TaskAPI.getTask(taskId);
         console.log(task);
         this.setState({ task });
     }
 
     handleSaveEdit = async (updatedTask) => {
-        const { sessionId, taskId } = this.props.match.params;
-        const task = await Session.saveTask(sessionId, taskId, updatedTask);
-        this.setState({ task })
+        const { taskId } = this.props.match.params;
+        await TaskAPI.updateTask(taskId, updatedTask);
+        this.setState({ task: updatedTask });
     }
 
     renderTask(task) {
@@ -26,6 +26,8 @@ export default class extends React.Component {
                 return <FollowLoopView handleSaveEdit={this.handleSaveEdit} task={task} />
             case K.taskType.UNFOLLOW_LOOP:
                 return <UnfollowLoopView handleSaveEdit={this.handleSaveEdit} task={task} />
+            case K.taskType.FOLLOW_UNFOLLOW_ALTERNATOR:
+                return <FollowUnfollowAlternatorView handleSaveEdit={this.handleSaveEdit} task={task} />
             case K.taskType.LOGIN:
                 return <LoginView handleSaveEdit={this.handleSaveEdit} task={task} />
             case K.taskType.LOGOUT:
@@ -56,13 +58,13 @@ class LoginView extends React.Component {
         newUsername: '',
         newPassword: ''
     }
-    
+
     handleToggleEdit = () => {
         const { task } = this.props;
         const { username, password } = task;
         this.setState({ isEditing: true, newUsername: username, newPassword: password });
     }
-    
+
     handleSaveEdit = () => {
         const { task } = this.props;
         const { newPassword, newUsername } = this.state;
@@ -70,17 +72,17 @@ class LoginView extends React.Component {
         this.props.handleSaveEdit(newTask);
         this.setState({ isEditing: false });
     }
-    
+
     handleCancelEdit = () => {
         this.setState({ isEditing: false });
     }
-    
+
     render() {
         const { task } = this.props;
         const { username, password } = task;
         const { uid, type } = task;
         const { isEditing, newPassword, newUsername } = this.state;
-        
+
         return <div>
             <h1>{uid}</h1>
             <div>
@@ -347,3 +349,122 @@ class UnfollowLoopView extends React.Component {
         </div>
     }
 }
+
+class FollowUnfollowAlternatorView extends React.Component {
+    state = {
+        isEditing: false,
+        newAverageDelay: 0,
+        newLimit: 0,
+        newUpperSwitch: 0,
+        newLowerSwitch: 0,
+        newSources: '',
+    }
+
+    handleToggleEdit = () => {
+        const { task } = this.props;
+        const { averageDelay, limit, sources, lowerSwitch, upperSwitch } = task;
+        this.setState({
+            isEditing: true,
+            newAverageDelay: averageDelay,
+            newLimit: limit,
+            newLowerSwitch: lowerSwitch,
+            newUpperSwitch: upperSwitch,
+            newSources: sources.join('\n')
+        });
+    }
+
+    handleSaveEdit = () => {
+        const { task } = this.props;
+        const { newAverageDelay, newLimit, newSources, newLowerSwitch, newUpperSwitch } = this.state;
+        const newTask = {
+            ...task,
+            averageDelay: newAverageDelay,
+            limit: newLimit,
+            lowerSwitch: newLowerSwitch,
+            upperSwitch: newUpperSwitch,
+            sources: newSources.split('\n')
+        };
+        this.props.handleSaveEdit(newTask);
+        this.setState({ isEditing: false });
+    }
+
+    handleCancelEdit = () => {
+        this.setState({ isEditing: false });
+    }
+
+    render() {
+        const { task } = this.props;
+        let { uid, type, averageDelay, limit, upperSwitch, lowerSwitch, sources } = task;
+        sources = sources.join('\n');
+        const { isEditing, newAverageDelay, newLimit, newUpperSwitch, newLowerSwitch, newSources } = this.state;
+
+        return <div>
+            <h1>{uid}</h1>
+            <div>
+                <div className="form-group row">
+                    <label class="col-sm-4"><b>Type:</b></label>
+                    <label class="col-sm-8">{type}</label>
+                </div>
+
+                <div className="form-group row">
+                    <label class="col-sm-4"><b>Average Delay:</b></label>
+                    <div className="col-sm-8">
+                        {isEditing ?
+                            <input type="number" class="form-control" value={newAverageDelay} onChange={e => this.setState({ newAverageDelay: e.target.value })} /> :
+                            <label>{averageDelay}</label>
+                        }
+                    </div>
+                </div>
+
+                <div className="form-group row">
+                    <label class="col-sm-4"><b>Limit:</b></label>
+                    <div className="col-sm-8">
+                        {isEditing ?
+                            <input type="number" class="form-control" value={newLimit} onChange={e => this.setState({ newLimit: e.target.value })} /> :
+                            <label>{limit}</label>
+                        }
+                    </div>
+                </div>
+
+                <div className="form-group row">
+                    <label class="col-sm-4"><b>Lower Switch:</b></label>
+                    <div className="col-sm-8">
+                        {isEditing ?
+                            <input type="number" class="form-control" value={newLowerSwitch} onChange={e => this.setState({ newLowerSwitch: e.target.value })} /> :
+                            <label>{lowerSwitch}</label>
+                        }
+                    </div>
+                </div>
+
+                <div className="form-group row">
+                    <label class="col-sm-4"><b>Upper Switch:</b></label>
+                    <div className="col-sm-8">
+                        {isEditing ?
+                            <input type="number" class="form-control" value={newUpperSwitch} onChange={e => this.setState({ newUpperSwitch: e.target.value })} /> :
+                            <label>{upperSwitch}</label>
+                        }
+                    </div>
+                </div>
+
+                <div className="form-group row">
+                    <label class="col-sm-4"><b>Sources:</b></label>
+                    <div className="col-sm-8">
+                        {isEditing ?
+                            <textarea type="number" class="form-control" value={newSources} onChange={e => this.setState({ newSources: e.target.value })} /> :
+                            <label>{sources}</label>
+                        }
+                    </div>
+                </div>
+
+                {isEditing ?
+                    <React.Fragment>
+                        <button class='btn btn-success btn-block' onClick={this.handleSaveEdit}>Save Changes</button>
+                        <button class='btn btn-danger btn-block' onClick={this.handleCancelEdit}>Cancel</button>
+                    </React.Fragment> :
+                    <button class='btn btn-danger btn-block' onClick={this.handleToggleEdit}>Edit</button>
+                }
+            </div>
+        </div>
+    }
+}
+
