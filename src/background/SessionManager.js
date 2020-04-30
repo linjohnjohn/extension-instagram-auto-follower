@@ -65,6 +65,7 @@ class SessionManager {
         this.sessionIndex = 0;
         this.taskIndex = 0;
         this.activeTabs = [];
+        this.lastCycleDate = -1;
     }
     
     specificMessageHandler = async (msg, sender, sendResponse) => {
@@ -95,7 +96,25 @@ class SessionManager {
             nextSessionIndex += 1;
 
             if (nextSessionIndex >= sessions.length) {
-                nextSessionIndex = 0;
+                const currentDate = new Date();
+                if (currentDate.getDate() !== this.lastCycleDate) {
+                    nextSessionIndex = 0; 
+                } else {
+                    console.log('do again for tomorrow')
+                    this.sessionIndex = 0;
+                    this.nextTaskIndex = -1;
+                    const tomorrow = new Date();
+                    tomorrow.setDate(currentDate.getDate() + 1);
+                    tomorrow.setHours(0);
+                    chrome.alarms.onAlarm.addListener((alarm) => {
+                        if (alarm.name === 'nextDay') {
+                            this.performNextTask();
+                            chrome.alarms.clear('nextDay');
+                        }
+                    });
+                    chrome.alarms.create('nextDay', { when: tomorrow.getTime() });
+                    return;
+                }
             }
 
             tasks = sessions[nextSessionIndex].tasks
@@ -105,6 +124,7 @@ class SessionManager {
         this.sessionIndex = nextSessionIndex;
         this.taskIndex = nextTaskIndex;
 
+        console.log('performTask:', 'sessionIndex', nextSessionIndex, 'taskIndex', nextTaskIndex);
         const nextTask = sessions[nextSessionIndex].tasks[nextTaskIndex];
         this.startTask(nextTask);
     }
@@ -117,6 +137,7 @@ class SessionManager {
             // @todo error handling
             console.log('startTask >', sources, url)
         }
+        // @todo handle WAIT here
         chrome.windows.create({ url: url, focused: false }, window => {
             const newTabId = window.tabs[0].id;
             this.activeTabs.push(newTabId);
@@ -135,6 +156,7 @@ class SessionManager {
         this.sessions = sessions
 
         if (sessions.length > 0){
+            this.lastCycleDate = (new Date()).getDate()
             this.sessionIndex = 0;
             this.taskIndex = -1;
         }
