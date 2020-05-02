@@ -4,10 +4,10 @@ import TaskAPI from './TaskAPI';
 
 export default class SessionAPI {
 
-    static async createSession() {
+    static async createSession(name = 'No Name') {
         const result = await chromeStorage.get('sessions');
         const sessions = result.sessions || [];
-        const newSession = new Session(chromeStorage.uuidv4());
+        const newSession = new Session(name);
         sessions.push(newSession);
         await chromeStorage.set({ sessions });
         return newSession;
@@ -58,6 +58,23 @@ export default class SessionAPI {
         console.log('ses', session)
         await chromeStorage.set({ sessions });
         return updatedSession;
+    }
+    
+    static async reorderSession(newOrder) {
+        const sessions = await SessionAPI.getAllSessions();
+        const sessionMap = sessions.reduce((sessionMap, s) => {
+            sessionMap[s.uid] = s;
+            return sessionMap;
+        }, {});
+        const newSessionIdsAllExists = newOrder.reduce((prev, id) => {
+            return prev && sessionMap[id];
+        }, true);
+        if (sessions.length === newOrder.length && newSessionIdsAllExists) {
+            const newSessions = newOrder.map(id => sessionMap[id]);
+            await chromeStorage.set({ sessions: newSessions });
+        } else {
+            throw new Error('New session ids do not match with existing session ids');
+        }
     }
 
     static fromObject(obj) {
