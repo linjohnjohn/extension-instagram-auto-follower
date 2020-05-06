@@ -10,8 +10,6 @@ import * as selectors from './selectors';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import TaskAPI from '../models/TaskAPI';
 
-// const silenceURL = chrome.runtime.getURL('/silent.mp3');
-// const sirenURL = chrome.runtime.getURL('/siren.mp3');
 const ACTIVITY_TYPE = {
     NONE: 'NONE',
     FOLLOW: 'FOLLOW',
@@ -119,9 +117,7 @@ class App extends React.Component {
         if (this.state.activityType !== ACTIVITY_TYPE.NONE) {
             return;
         } else {
-            // this.silentAudio.play();
             this.followLoop(this.state.delay * 1000);
-            // chrome.runtime.sendMessage({ type: 'autoFollow', delay: this.state.delay * 1000 });
             this.setState({ activityType: ACTIVITY_TYPE.FOLLOW });
         }
     }
@@ -133,27 +129,6 @@ class App extends React.Component {
             this.unFollowLoop(this.state.delay * 1000);
             this.setState({ activityType: ACTIVITY_TYPE.UNFOLLOW });
         }
-    }
-
-    attemptLogin = async () => {
-        await doThenWait(() => {
-            const switchAccountButton = selectors.selectSwitchAccountButton();
-            if (switchAccountButton) {
-                switchAccountButton.click();
-            }
-        }, 2000);
-
-        await doThenWait(() => {
-            selectors.selectUsernameInput().focus();
-            chrome.runtime.sendMessage({ type: "typeString", string: "pupreciation" });
-        }, 2000);
-
-        await doThenWait(() => {
-            selectors.selectPasswordInput().focus();
-            chrome.runtime.sendMessage({ type: "typeString", string: "nightpuppy2" });
-        }, 2000);
-
-        selectors.selectLoginButton().click();
     }
 
     handleStop = () => {
@@ -183,7 +158,6 @@ class App extends React.Component {
                         <label>You have {ACTION_VERBS[activityType]} <label id="extension-count">{activityCount}</label> people in this session.</label>
                     </React.Fragment>
                 }
-                <button className="btn btn-success mb-3" onClick={this.attemptLogin}>Test Functionality</button>
                 <p>
                     <a
                         target="_blank"
@@ -192,6 +166,7 @@ class App extends React.Component {
                     >
                         Need help? Here are instructions
                     </a>
+                    To use our COMPLETELY automated follow for follow stragety check out the options page of this extension.
                 </p>
             </div>
         );

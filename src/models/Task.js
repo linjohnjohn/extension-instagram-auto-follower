@@ -216,8 +216,8 @@ export class Logout extends Task {
 
         await doThenWait(() => {
             selectors.selectLogoutButton().click();
-            this.done();
         }, 2000);
+        this.done();
     }
 }
 

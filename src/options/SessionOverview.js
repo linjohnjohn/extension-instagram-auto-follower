@@ -91,7 +91,7 @@ export default class extends React.Component {
                     <form class="mb-3">
                         <div className="form-group">
                         <label>New Session Name</label>
-                        <input type="text" className="form-control" value={newSessionName} onChange={e => this.setState({ newSession: e.target.value })}/>
+                        <input type="text" className="form-control" value={newSessionName} onChange={e => this.setState({ newSessionName: e.target.value })}/>
                         </div>
                         <button
                             type="button"

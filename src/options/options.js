@@ -10,6 +10,7 @@ import TaskView from './TaskView';
 
 const App = () => {
     return <Router>
+        <p>To learn how to use: https://docs.google.com/document/d/19GSsm6D47KcNihd4Oc2ljIYOIOnit30tnjIkMo3j2nE/edit?usp=sharing</p>
         <Switch>
             <Route exact={true} path='/options.html'>
                 <SessionOverview />
