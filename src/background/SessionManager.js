@@ -98,7 +98,8 @@ class SessionManager {
             if (nextSessionIndex >= sessions.length) {
                 const currentDate = new Date();
                 if (currentDate.getDate() !== this.lastCycleDate) {
-                    nextSessionIndex = 0; 
+                    this.lastCycleDate = currentDate.getDate();
+                    nextSessionIndex = 0;
                 } else {
                     console.log('do again for tomorrow')
                     this.sessionIndex = 0;
@@ -134,7 +135,7 @@ class SessionManager {
         if (task.type === K.taskType.FOLLOW_LOOP) {
             const { sources } = task;
             url = sources[Math.floor(Math.random() * sources.length)];
-            // @todo error handling
+            // @todo error handling no url?
             console.log('startTask >', sources, url)
         }
         // @todo handle WAIT here
