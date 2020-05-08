@@ -1,25 +1,25 @@
 {
-  "name": "Instagram Auto Follower",
-  "version": "1.0",
+  "name": "IG Auto Follower",
+  "version": "2.0",
   "description": "Automate your instagram Follow for Follow strategy!",
-  "permissions": ["https://www.instagram.com/*", "debugger", "storage"],
+  "permissions": ["debugger", "storage"],
   "manifest_version": 2,
   "icons": {
-    "16": "instagram-auto-follower-icon16.png",
-    "32": "instagram-auto-follower-icon32.png",
-    "48": "instagram-auto-follower-icon48.png",
-    "128": "instagram-auto-follower-icon128.png"
+    "16": "16.png",
+    "32": "32.png",
+    "64": "64.png",
+    "128": "128.png"
   },
   "browser_action": {},
   "background": {
-    "scripts": ["/static/js/background.js"]
+    "scripts": ["/static/js/background.js", "/static/js/0.chunk.js"]
   },
   "options_page": "options.html",
   "content_scripts": [
     {
       "matches": ["https://www.instagram.com/*"],
-      "css": ["/static/css/0.chunk.css", "/static/css/content.css"],
-      "js": ["/static/js/0.chunk.js", "/static/js/content.js"]
+      "css": ["/static/css/1.chunk.css", "/static/css/content.css"],
+      "js": ["/static/js/1.chunk.js", "/static/js/content.js"]
     }
   ],
   "web_accessible_resources": ["/help/help.html"],

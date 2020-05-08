@@ -32,7 +32,7 @@ class App extends React.Component {
     componentDidMount() {
         chrome.runtime.onMessage.addListener((msg, sender) => {
             if (msg.type === 'doTask') {
-                TaskAPI.fromObject(msg.task).run();                
+                TaskAPI.fromObject(msg.task).run();
             }
         });
     }
@@ -139,6 +139,15 @@ class App extends React.Component {
         const { delay, activityType, activityCount } = this.state;
         return (
             <div style={{ padding: '20px', color: '#000' }}>
+                <p className='mb-3'>Note: To use our COMPLETELY automated follow for follow strategy check out the options page of this extension.</p>
+                <p className='mb-3'>The features on this panel can automate following and unfollowing but does so indefinitely. Learn more&nbsp;
+                    <a
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={chrome.runtime.getURL('/help/help.html')}>
+                        here
+                    </a>
+                </p>
                 <div className="form-group">
                     <label>Delay in Seconds</label>
                     <input
@@ -166,7 +175,6 @@ class App extends React.Component {
                     >
                         Need help? Here are instructions
                     </a>
-                    To use our COMPLETELY automated follow for follow stragety check out the options page of this extension.
                 </p>
             </div>
         );

@@ -32,7 +32,7 @@ export const selectAllUnfollowButtons = () => {
 }
 
 export const selectLikeButton = () => {
-    document.querySelector('span.fr66n .wpO6b');
+    return document.querySelector('span.fr66n .wpO6b');
 }
 
 export const selectNextPostArrow = () => {

@@ -80,46 +80,42 @@ export default class extends React.Component {
     render() {
         const { sessionIdOrder, sessionMap, isSessionManagerActive, newSessionName } = this.state;
 
-        return <div className="container">
-            <div class='row justify-content-center'>
-                <div class='col-8'>
-                    <h1>Sessions</h1>
-                    {isSessionManagerActive ?
-                        <button class='btn btn-success btn-block' onClick={this.handleStopSessions}>End Sessions</button> :
-                        <button class='btn btn-success btn-block' onClick={this.handleRunSessions}>Run Sessions</button>
-                    }
-                    <form class="mb-3">
-                        <div className="form-group">
-                        <label>New Session Name</label>
-                        <input type="text" className="form-control" value={newSessionName} onChange={e => this.setState({ newSessionName: e.target.value })}/>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn btn-primary btn-block"
-                            onClick={this.handleAddSession}>Add Session</button>
-                    </form>
-
-
-
-                    <div class="list-group" id="sessionList">
-                        {sessionIdOrder.map((sessionId) => {
-                            return <li class='list-group-item list-group-item-action d-flex flex-row justify-content-between' key={sessionId} data-dnd-id={sessionId}>
-                                <div>
-                                    <svg viewBox="0 0 100 100" height="16" width="16">
-                                        <rect width="100" height="20" rx="8"></rect>
-                                        <rect y="30" width="100" height="20" rx="8"></rect>
-                                        <rect y="60" width="100" height="20" rx="8"></rect>
-                                    </svg>&nbsp;
-                                <Link to={`/session/${sessionId}`} class='text-dark'>
-                                        {sessionMap[sessionId].name || 'No Name'}
-                                    </Link>
-                                </div>
-                                <a href='# ' class='text-danger' onClick={() => this.handleDeleteSession(sessionId)}>Delete</a>
-                            </li>
-                        })}
-                    </div>
+        return <>
+            <h1>Sessions</h1>
+            {isSessionManagerActive ?
+                <button class='btn btn-success btn-block' onClick={this.handleStopSessions}>End Sessions</button> :
+                <button class='btn btn-success btn-block' onClick={this.handleRunSessions}>Run Sessions</button>
+            }
+            <form class="mb-3">
+                <div className="form-group">
+                    <label>New Session Name</label>
+                    <input type="text" className="form-control" value={newSessionName} onChange={e => this.setState({ newSessionName: e.target.value })} />
                 </div>
+                <button
+                    type="button"
+                    class="btn btn-primary btn-block"
+                    onClick={this.handleAddSession}>Add Session</button>
+            </form>
+
+
+
+            <div class="list-group" id="sessionList">
+                {sessionIdOrder.map((sessionId) => {
+                    return <li class='list-group-item list-group-item-action d-flex flex-row justify-content-between' key={sessionId} data-dnd-id={sessionId}>
+                        <div>
+                            <svg viewBox="0 0 100 100" height="16" width="16">
+                                <rect width="100" height="20" rx="8"></rect>
+                                <rect y="30" width="100" height="20" rx="8"></rect>
+                                <rect y="60" width="100" height="20" rx="8"></rect>
+                            </svg>&nbsp;
+                                <Link to={`/session/${sessionId}`} class='text-dark'>
+                                {sessionMap[sessionId].name || 'No Name'}
+                            </Link>
+                        </div>
+                        <a href='# ' class='text-danger' onClick={() => this.handleDeleteSession(sessionId)}>Delete</a>
+                    </li>
+                })}
             </div>
-        </div>
+        </>
     }
 }

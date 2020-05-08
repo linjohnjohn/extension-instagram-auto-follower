@@ -216,8 +216,8 @@ export class Logout extends Task {
 
         await doThenWait(() => {
             selectors.selectLogoutButton().click();
-        }, 2000);
-        this.done();
+            this.done();
+        }, 2000, () => this.done());
     }
 }
 
@@ -231,8 +231,8 @@ export class LikeUserPosts extends Task {
         const { likeCount } = this;
         try {
             await doThenWait(() => {
-                selectors.selectLatestPostSquare();
-            }, 3000);
+                selectors.selectLatestPostSquare().click();
+            }, 3000, () => window.close());
 
             for (let i = 0; i < likeCount; i++) {
                 await doThenWait(() => {

@@ -23,12 +23,15 @@ export const waitThenDo = (fn, delay) => {
  * @param {*} fn 
  * @param {*} delay 
  */
-export const doThenWait = (fn = () => {}, delay) => {
+export const doThenWait = (fn = () => {}, delay, onerr = null) => {
     return new Promise(async (resolve) => {
         let ret;
         try {
             ret = await fn();
         } catch (err) {
+            if (onerr) {
+                await onerr(err)
+            }
             console.log(err)
         }
         setTimeout(() => {

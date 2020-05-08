@@ -41,14 +41,10 @@ export default class extends React.Component {
     render() {
         const { task } = this.state;
 
-        return <div className="container">
-            <div class='row justify-content-center'>
-                <div class='col-8'>
-                    <h3>Task: {task.uid}</h3>
-                    {this.renderTask(task)}
-                </div>
-            </div>
-        </div>
+        return <>
+            <h3>Task: {task.uid}</h3>
+            {this.renderTask(task)}
+        </>
     }
 }
 

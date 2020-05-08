@@ -94,77 +94,72 @@ export default class extends React.Component {
         const { tasks = [] } = session;
         const taskTypes = Object.values(K.taskType);
 
-        return <div className="container">
-            <div class='row justify-content-center'>
-                <div class='col-8'>
-
-                    <div class='mb-3'>
-                        <div className="form-group row">
-                            <h3 className='col-sm-4'><b>Session: </b></h3>
-                            <div className="col-sm-8">
-                                {isEditing ?
-                                    <input class="form-control" value={newName} onChange={e => this.setState({ newName: e.target.value })} /> :
-                                    <h3>{session.name || 'No Name'}</h3>
-                                }
-                            </div>
-                        </div>
-
+        return <>
+            <div class='mb-3'>
+                <div className="form-group row">
+                    <h3 className='col-sm-4'><b>Session: </b></h3>
+                    <div className="col-sm-8">
                         {isEditing ?
-                            <React.Fragment>
-                                <button class='btn btn-success btn-block' onClick={this.handleSaveEdit}>Save Changes</button>
-                                <button class='btn btn-danger btn-block' onClick={this.handleCancelEdit}>Cancel</button>
-                            </React.Fragment> :
-                            <button class='btn btn-danger btn-block' onClick={this.handleToggleEdit}>Edit</button>
+                            <input class="form-control" value={newName} onChange={e => this.setState({ newName: e.target.value })} /> :
+                            <h3>{session.name || 'No Name'}</h3>
                         }
                     </div>
-
-                    <h4>Add A Task</h4>
-
-                    <form className='mb-3'>
-                        <div className="form-group">
-                            <label>Task Type</label>
-                            <select
-                                className="custom-select"
-                                value={newTaskType}
-                                onChange={(e) => {
-                                    this.setState({ newTaskType: e.target.value });
-                                }}>
-                                <option value="none" selected disabled hidden>Select A New Task Type</option>
-                                {taskTypes.map((task) => {
-                                    return <option value={task}>{task}</option>
-                                })}
-                            </select>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn btn-primary"
-                            onClick={this.handleAddTask}>
-                            Add Task
-                        </button>
-                    </form>
-
-                    <h4>Existing Tasks</h4>
-
-                    <div class="list-group" id='taskList'>
-
-                        {tasks.map((taskId, i) => {
-                            return <li class='list-group-item list-group-item-action d-flex flex-row justify-content-between' key={taskId} data-dnd-id={taskId}>
-                                <div>
-                                    <svg viewBox="0 0 100 100" height="16" width="16">
-                                        <rect width="100" height="20" rx="8"></rect>
-                                        <rect y="30" width="100" height="20" rx="8"></rect>
-                                        <rect y="60" width="100" height="20" rx="8"></rect>
-                                    </svg>&nbsp;
-                                    <Link to={`/session/${session.uid}/task/${taskId}`} class='text-dark' draggable={false}>
-                                        {taskMap[taskId].type}
-                                    </Link>
-                                </div>
-                                <a href='# ' class='text-danger' onClick={() => this.handleDeleteTask(i)} draggable={false}>Delete</a>
-                            </li>
-                        })}
-                    </div>
                 </div>
+
+                {isEditing ?
+                    <React.Fragment>
+                        <button class='btn btn-success btn-block' onClick={this.handleSaveEdit}>Save Changes</button>
+                        <button class='btn btn-danger btn-block' onClick={this.handleCancelEdit}>Cancel</button>
+                    </React.Fragment> :
+                    <button class='btn btn-danger btn-block' onClick={this.handleToggleEdit}>Edit</button>
+                }
             </div>
-        </div>
+
+            <h4>Add A Task</h4>
+
+            <form className='mb-3'>
+                <div className="form-group">
+                    <label>Task Type</label>
+                    <select
+                        className="custom-select"
+                        value={newTaskType}
+                        onChange={(e) => {
+                            this.setState({ newTaskType: e.target.value });
+                        }}>
+                        <option value="none" selected disabled hidden>Select A New Task Type</option>
+                        {taskTypes.map((task) => {
+                            return <option value={task}>{task}</option>
+                        })}
+                    </select>
+                </div>
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    onClick={this.handleAddTask}>
+                    Add Task
+                        </button>
+            </form>
+
+            <h4>Existing Tasks</h4>
+
+            <div class="list-group" id='taskList'>
+
+                {tasks.map((taskId, i) => {
+                    return <li class='list-group-item list-group-item-action d-flex flex-row justify-content-between' key={taskId} data-dnd-id={taskId}>
+                        <div>
+                            <svg viewBox="0 0 100 100" height="16" width="16">
+                                <rect width="100" height="20" rx="8"></rect>
+                                <rect y="30" width="100" height="20" rx="8"></rect>
+                                <rect y="60" width="100" height="20" rx="8"></rect>
+                            </svg>&nbsp;
+                                    <Link to={`/session/${session.uid}/task/${taskId}`} class='text-dark' draggable={false}>
+                                {taskMap[taskId].type}
+                            </Link>
+                        </div>
+                        <a href='# ' class='text-danger' onClick={() => this.handleDeleteTask(i)} draggable={false}>Delete</a>
+                    </li>
+                })}
+            </div>
+        </>
     }
 }

@@ -139,7 +139,7 @@ module.exports = function(webpackEnv) {
     // This means they will be the "root" imports that are included in JS bundle.
     entry: {
       content: "./src/content/content.js",
-      autoFollow: "./src/action_scripts/autoFollow.js",
+      options: "./src/options/options.js",
       background: "./src/background/background.js"
     },
     output: {
@@ -491,31 +491,32 @@ module.exports = function(webpackEnv) {
     },
     plugins: [
       // Generates an `index.html` file with the <script> injected.
-      // new HtmlWebpackPlugin(
-      //   Object.assign(
-      //     {},
-      //     {
-      //       chunks: ['popup'],
-      //       template: paths.baseTemplateHtml,
-      //     },
-      //     isEnvProduction
-      //       ? {
-      //           minify: {
-      //             removeComments: true,
-      //             collapseWhitespace: true,
-      //             removeRedundantAttributes: true,
-      //             useShortDoctype: true,
-      //             removeEmptyAttributes: true,
-      //             removeStyleLinkTypeAttributes: true,
-      //             keepClosingSlash: true,
-      //             minifyJS: true,
-      //             minifyCSS: true,
-      //             minifyURLs: true,
-      //           },
-      //         }
-      //       : undefined
-      //   )
-      // ),
+      new HtmlWebpackPlugin(
+        Object.assign(
+          {},
+          {
+            chunks: ['options'],
+            template: paths.baseTemplateHtml,
+            filename: 'options.html'
+          },
+          isEnvProduction
+            ? {
+                minify: {
+                  removeComments: true,
+                  collapseWhitespace: true,
+                  removeRedundantAttributes: true,
+                  useShortDoctype: true,
+                  removeEmptyAttributes: true,
+                  removeStyleLinkTypeAttributes: true,
+                  keepClosingSlash: true,
+                  minifyJS: true,
+                  minifyCSS: true,
+                  minifyURLs: true,
+                },
+              }
+            : undefined
+        )
+      ),
       // Inlines the webpack runtime script. This script is too small to warrant
       // a network request.
       // https://github.com/facebook/create-react-app/issues/5358
