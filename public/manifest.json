@@ -12,14 +12,14 @@
   },
   "browser_action": {},
   "background": {
-    "scripts": ["/static/js/background.js", "/static/js/0.chunk.js"]
+    "scripts": ["/static/js/background.js"]
   },
   "options_page": "options.html",
   "content_scripts": [
     {
       "matches": ["https://www.instagram.com/*"],
-      "css": ["/static/css/1.chunk.css", "/static/css/content.css"],
-      "js": ["/static/js/1.chunk.js", "/static/js/content.js"]
+      "css": ["/static/css/0.chunk.css", "/static/css/content.css"],
+      "js": ["/static/js/0.chunk.js",  "/static/js/content.js"]
     }
   ],
   "web_accessible_resources": ["/help/help.html"],
