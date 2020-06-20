@@ -1,7 +1,6 @@
 /* global chrome */
 import K from "../constants";
 import './SessionManager';
-
 console.log('background attached')
 // Called when the user clicks on the browser action
 chrome.browserAction.onClicked.addListener(function (tab) {

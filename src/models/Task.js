@@ -8,11 +8,11 @@ import TaskAPI from './TaskAPI';
 
 export class Task {
     constructor(type) {
-        this.uid = chromeStorage.uuidv4() ;
+        this.uid = chromeStorage.uuidv4();
         this.type = type;
     }
 
-    
+
     run() {
         this.done();
     }
@@ -89,10 +89,19 @@ export class UnfollowLoop extends Task {
     }
 
     run = async () => {
-        await doThenWait(() => {
-            selectors.selectProfileIcon().click();
-        }, 5000);
-
+        if (selectors.selectProfileIconAsSpan()) {
+            await doThenWait(() => {
+                selectors.selectProfileIconAsSpan().click();
+            }, 1000);
+            await doThenWait(() => {
+                selectors.selectProfileOnDropdown().click();
+            }, 5000);
+        } else {
+            await doThenWait(() => {
+                selectors.selectProfileIcon().click();
+            }, 5000);
+        }
+            
         await doThenWait(() => {
             selectors.selectFollowingOpener().click();
         }, 5000);
@@ -142,18 +151,37 @@ export class FollowUnfollowAlternator extends Task {
     }
 
     run = async () => {
-        await doThenWait(() => {
-            selectors.selectProfileIcon().click();
-        }, 5000);
+        if (selectors.selectProfileIconAsSpan()) {
+            await doThenWait(() => {
+                selectors.selectProfileIconAsSpan().click();
+            }, 1000);
+            await doThenWait(() => {
+                selectors.selectProfileOnDropdown().click();
+            }, 5000);
+        } else {
+            await doThenWait(() => {
+                selectors.selectProfileIcon().click();
+            }, 5000);
+        }
 
         const followingCount = await doThenWait(() => {
-            return parseInt(selectors.selectFollowingCount().textContent, 10);
+            let countText = selectors.selectFollowingCount().textContent;
+            if (countText.includes('k')) {
+                countText = countText.replace('k', '');
+                return parseInt(countText, 10) * 1000;
+            } else if (countText.includes('m')) {
+                countText = countText.replace('m', '');
+                return parseInt(countText, 10) * 1000000;
+            } else {
+                countText = countText.replace(',', '');
+                return parseInt(countText, 10);
+            }
         }, 1000);
 
         if (this.mode === K.taskType.FOLLOW_LOOP && followingCount >= this.upperSwitch) {
             this.mode = K.taskType.UNFOLLOW_LOOP;
             await TaskAPI.updateTask(this.uid, this);
-        } else if (this.mode === K.taskType.UNFOLLOW_LOOP && followingCount <= this.lowerSwitch) {
+        } else if (this.mode === K.taskType.UNFOLLOW_LOOP && followingCount < this.lowerSwitch) {
             this.mode = K.taskType.FOLLOW_LOOP;
             await TaskAPI.updateTask(this.uid, this);
         }
@@ -206,18 +234,34 @@ export class Logout extends Task {
     }
 
     run = async () => {
-        await doThenWait(() => {
-            selectors.selectProfileIcon().click();
-        }, 5000);
+        // @todo hack for new interface
+        if (selectors.selectProfileIconAsSpan()) {
+            await doThenWait(() => {
+                selectors.selectProfileIconAsSpan().click();
+            }, 5000);
 
-        await doThenWait(() => {
-            selectors.selectProfileGear().click();
-        }, 2000);
+            await doThenWait(() => {
+                selectors.selectLogoutOnDropdown().click();
+            }, 2000);
 
-        await doThenWait(() => {
-            selectors.selectLogoutButton().click();
-            this.done();
-        }, 2000, () => this.done());
+            await doThenWait(() => {
+                selectors.selectLogoutConfirm().click();
+                this.done();
+            }, 2000, () => this.done());
+        } else {
+            await doThenWait(() => {
+                selectors.selectProfileIcon().click();
+            }, 5000);
+
+            await doThenWait(() => {
+                selectors.selectProfileGear().click();
+            }, 2000);
+
+            await doThenWait(() => {
+                selectors.selectLogoutButton().click();
+                this.done();
+            }, 2000, () => this.done());
+        }
     }
 }
 
@@ -226,7 +270,7 @@ export class LikeUserPosts extends Task {
         super(K.taskType.LIKE_USER_POSTS);
         this.likeCount = likeCount;
     }
- 
+
     run = async () => {
         const { likeCount } = this;
         try {

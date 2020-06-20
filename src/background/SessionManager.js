@@ -77,7 +77,6 @@ class SessionManager {
                 this.performNextTask();
             });
         } else if (msg.type === 'replaceWithAnotherTask') {
-            console.log('replaceWithAnotherTask', msg.task);
             chrome.tabs.remove(sender.tab.id, () => {
                 this.activeTabs = this.activeTabs.filter(id => id !== sender.tab.id);
                 this.startTask(msg.task)
@@ -87,17 +86,17 @@ class SessionManager {
 
     performNextTask() {
         const { sessions, sessionIndex, taskIndex } = this;
-        console.log('performNextTask > sessions', sessions)
         let tasks = sessions[sessionIndex].tasks;
         let nextSessionIndex = sessionIndex;
         let nextTaskIndex = taskIndex + 1;
         
-        while (nextTaskIndex >= tasks.length) {
+        while (nextTaskIndex >= tasks.length || !sessions[nextSessionIndex].isEnabled) {
             nextSessionIndex += 1;
 
             if (nextSessionIndex >= sessions.length) {
                 const currentDate = new Date();
                 if (currentDate.getDate() !== this.lastCycleDate) {
+                    console.log('lastCycleDate was', this.lastCycleDate, 'the date now is', currentDate.getDate());
                     this.lastCycleDate = currentDate.getDate();
                     nextSessionIndex = 0;
                 } else {
@@ -125,8 +124,9 @@ class SessionManager {
         this.sessionIndex = nextSessionIndex;
         this.taskIndex = nextTaskIndex;
 
-        console.log('performTask:', 'sessionIndex', nextSessionIndex, 'taskIndex', nextTaskIndex);
-        const nextTask = sessions[nextSessionIndex].tasks[nextTaskIndex];
+        const nextSession = sessions[nextSessionIndex];
+        const nextTask = nextSession.tasks[nextTaskIndex];
+        console.log('performTask:', 'sessionIndex', nextSession.name, 'taskIndex', nextTask.type);
         this.startTask(nextTask);
     }
 
@@ -136,7 +136,7 @@ class SessionManager {
             const { sources } = task;
             url = sources[Math.floor(Math.random() * sources.length)];
             // @todo error handling no url?
-            console.log('startTask >', sources, url)
+            console.log('follow task using >', url)
         }
         // @todo handle WAIT here
         chrome.windows.create({ url: url, focused: false }, window => {

@@ -132,7 +132,7 @@ module.exports = function(webpackEnv) {
     bail: isEnvProduction,
     devtool: isEnvProduction
       ? shouldUseSourceMap
-        ? 'source-map'
+        ? 'inline-source-map'
         : false
       : isEnvDevelopment && 'cheap-module-source-map',
     // These are the "entry points" to our application.
@@ -178,7 +178,7 @@ module.exports = function(webpackEnv) {
       globalObject: 'this',
     },
     optimization: {
-      minimize: isEnvProduction,
+      minimize: false && isEnvProduction,
       minimizer: [
         // This is only used in production mode
         new TerserPlugin({
@@ -498,6 +498,32 @@ module.exports = function(webpackEnv) {
             chunks: ['options'],
             template: paths.baseTemplateHtml,
             filename: 'options.html'
+          },
+          isEnvProduction
+            ? {
+                minify: {
+                  removeComments: true,
+                  collapseWhitespace: true,
+                  removeRedundantAttributes: true,
+                  useShortDoctype: true,
+                  removeEmptyAttributes: true,
+                  removeStyleLinkTypeAttributes: true,
+                  keepClosingSlash: true,
+                  minifyJS: true,
+                  minifyCSS: true,
+                  minifyURLs: true,
+                },
+              }
+            : undefined
+        )
+      ),
+      new HtmlWebpackPlugin(
+        Object.assign(
+          {},
+          {
+            chunks: ['background'],
+            template: paths.baseTemplateHtml,
+            filename: 'background.html'
           },
           isEnvProduction
             ? {

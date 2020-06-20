@@ -53,6 +53,14 @@ export default class extends React.Component {
         SessionAPI.reorderSession(newOrder);
     }
 
+    handleChangeSessionEnabled = async (sessionId, enabled) => {
+        const { sessionMap } = this.state;
+        const updatedSession  = { ...sessionMap[sessionId], isEnabled: enabled };
+        await SessionAPI.updateSession(sessionId, updatedSession);
+        const newSessionMap = { ...sessionMap, [sessionId]: updatedSession };
+        this.setState({ sessionMap: newSessionMap });
+    }
+
     handleRunSessions = async () => {
         chrome.runtime.sendMessage({ type: K.messageTypes.START_SESSION_MANAGER });
         this.setState({ isSessionManagerActive: true });
@@ -112,7 +120,21 @@ export default class extends React.Component {
                                 {sessionMap[sessionId].name || 'No Name'}
                             </Link>
                         </div>
-                        <a href='# ' class='text-danger' onClick={() => this.handleDeleteSession(sessionId)}>Delete</a>
+                        <div className='d-flex flex-row'>
+                            <div class="custom-control custom-switch">
+                                <input 
+                                id={`switch-${sessionId}`} 
+                                type="checkbox" 
+                                class="custom-control-input" 
+                                checked={sessionMap[sessionId].isEnabled}
+                                onChange={(e) => {
+                                    this.handleChangeSessionEnabled(sessionId, e.target.checked);
+                                }}
+                                />
+                                <label class="custom-control-label" for={`switch-${sessionId}`} />
+                            </div>
+                            <a href='# ' class='text-danger' onClick={() => this.handleDeleteSession(sessionId)}>Delete</a>
+                        </div>
                     </li>
                 })}
             </div>

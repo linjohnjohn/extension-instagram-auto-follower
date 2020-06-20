@@ -16,6 +16,23 @@ export const selectLikersOpener = () => {
 export const selectProfileIcon = () => {
     return document.querySelector('div.Fifk5 a._2dbep.qNELH.kIKUG');
 }
+
+export const selectProfileIconAsSpan = () => {
+    return document.querySelector('div.Fifk5 span._2dbep.qNELH');
+}
+
+export const selectProfileOnDropdown = () => {
+    return document.querySelectorAll('a.-qQT3')[0];
+}
+
+export const selectLogoutOnDropdown = () => {
+    return document.querySelector('div.-qQT3');
+}
+
+export const selectLogoutConfirm = () => {
+    return document.querySelector('button.aOOlW.bIiDR');
+}
+
 export const selectHomeIcon = () => {
     return document.querySelectorAll('div.Fifk5 a')[0];
 }
