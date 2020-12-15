@@ -13,7 +13,8 @@ import TaskAPI from '../models/TaskAPI';
 const ACTIVITY_TYPE = {
     NONE: 'NONE',
     FOLLOW: 'FOLLOW',
-    UNFOLLOW: 'UNFOLLOW'
+    UNFOLLOW: 'UNFOLLOW',
+    RECORD: 'RECORD'
 }
 
 const ACTION_VERBS = {
@@ -24,7 +25,7 @@ const ACTION_VERBS = {
 
 class App extends React.Component {
     state = {
-        activityCount: 0,
+        activityCount: 0,   
         activityType: ACTIVITY_TYPE.NONE,
         delay: 180,
     }
@@ -82,15 +83,26 @@ class App extends React.Component {
 
     unFollowLoop = (delay) => {
         const unfollow = async () => {
+            const followers = JSON.parse(localStorage.getItem('followers'));
             let buttons = null;
             const batch = 5
 
             while (true) {
                 await doThenWait(async () => {
                     for (let i = 0; i < batch; i) {
-                        buttons = Array.from(document.querySelectorAll('.sqdOP.L3NKy._8A5w5:not(._4pI4F)'));
+                        buttons = Array.from(document.querySelectorAll('.ybXk5._4EzTm.HVWg4 .sqdOP.L3NKy._8A5w5:not(._4pI4F)'));
+
                         if (buttons.length !== 0) {
                             const targetButton = buttons[0];
+                            const targetRow = targetButton.parentNode.parentNode;
+                            const username = targetRow.querySelector('.FPmhX').textContent
+                            debugger;
+                            
+                            if (followers[username]) {
+                                targetRow.remove();
+                                console.log('Remove ' + username);
+                                continue;
+                            }
 
                             await doThenWait(() => {
                                 targetButton.scrollIntoView();
@@ -113,6 +125,34 @@ class App extends React.Component {
         unfollow();
     }
 
+    recordFollowerLoop = async () => {
+        let prevLastFollower = null;
+        let isDoneCounter = 0;
+
+        while (isDoneCounter <= 3) {
+            await doThenWait(async () => {
+                const followers = selectors.selectAllFollowerUsername();
+                const lastFollower = followers[followers.length - 1];
+
+                if (lastFollower === prevLastFollower) {
+                    isDoneCounter += 1;
+                } else {
+                    lastFollower.scrollIntoView();
+                    prevLastFollower = lastFollower;
+                    isDoneCounter = 0;
+                }
+            }, 1000);
+        }
+
+        const followersHash = Array.from(selectors.selectAllFollowerUsername()).reduce((prev, node) => {
+            prev[node.textContent] = true;
+            return prev;
+        }, {});
+
+        localStorage.setItem('followers', JSON.stringify(followersHash));
+        window.location.reload();
+    }
+
     handleFollow = () => {
         if (this.state.activityType !== ACTIVITY_TYPE.NONE) {
             return;
@@ -128,6 +168,15 @@ class App extends React.Component {
         } else {
             this.unFollowLoop(this.state.delay * 1000);
             this.setState({ activityType: ACTIVITY_TYPE.UNFOLLOW });
+        }
+    }
+
+    handleRecordFollower = () => {
+        if (this.state.activityType !== ACTIVITY_TYPE.NONE) {
+            return;
+        } else {
+            this.recordFollowerLoop();
+            this.setState({ activityType: ACTIVITY_TYPE.RECORD });
         }
     }
 
@@ -161,6 +210,7 @@ class App extends React.Component {
                     (<React.Fragment>
                         <button className="btn btn-success mb-3" onClick={this.handleFollow}>Start Following</button>
                         <button className="btn btn-success mb-3" onClick={this.handleUnfollow}>Start Unfollow</button>
+                        <button className="btn btn-success mb-3" onClick={this.handleRecordFollower}>Record Followers</button>
                     </React.Fragment>) :
                     <React.Fragment>
                         <button className="btn btn-danger mb-3" onClick={this.handleStop}>Stop</button>

@@ -1,3 +1,7 @@
+export const selectFollowerOpener = () => {
+    return document.querySelectorAll('.-nal3')[1];
+}
+
 export const selectFollowingOpener = () => {
     return document.querySelectorAll('.-nal3')[2];
 }
@@ -36,6 +40,7 @@ export const selectLogoutConfirm = () => {
 export const selectHomeIcon = () => {
     return document.querySelectorAll('div.Fifk5 a')[0];
 }
+
 export const selectAllCommentLikeIcons = () => {
     return Array.from(document.querySelectorAll('button.wpO6b.ZQScA svg[aria-label="Like"]'));
 }
@@ -82,4 +87,8 @@ export const selectLoginButton = () => {
 
 export const selectLatestPostSquare = () => {
     return document.querySelector('.eLAPa');
+}
+
+export const selectAllFollowerUsername = () => {
+    return document.querySelectorAll('.FPmhX');
 }
